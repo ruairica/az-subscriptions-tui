@@ -1,0 +1,1 @@
+# az-subscriptions-tui
