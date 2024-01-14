@@ -1,15 +1,20 @@
 ﻿using Terminal.Gui;
 using System.Text.Json;
+using System.Runtime.InteropServices;
 
 namespace Az.Subscriptions;
 
 public class SubscriptionsList : ListView
 {
-    // TODO update this to be OS agnostic
-    public static readonly string PATH = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\.azure\\azureProfile.json";
+    public static string PATH => Path.Combine(
+            Environment.GetFolderPath(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                                                ? Environment.SpecialFolder.UserProfile
+                                                : Environment.SpecialFolder.Personal),
+        ".azure",
+        "azureProfile.json");
+
     public static readonly JsonSerializerOptions JSON_OPTIONS = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly AzureAccount azureAccount;
-
 
     public SubscriptionsList(AzureAccount azureAccount)
         : base(azureAccount.Subscriptions.Select(s => s.Name).ToList())
@@ -35,9 +40,7 @@ public class SubscriptionsList : ListView
         Source.SetMark(SelectedItem, true);
         SetNeedsDisplay();
         return true;
-
     }
-
 
     private static AzureAccount ToUpdatedAzureAccount(AzureAccount azureAccount, int active) =>
         new(azureAccount.InstallationId,
@@ -47,8 +50,6 @@ public class SubscriptionsList : ListView
                 .ToArray()
         );
 
-    private static string Serialize(AzureAccount obj)
-    {
-        return JsonSerializer.Serialize(obj, JSON_OPTIONS);
-    }
+    private static string Serialize(AzureAccount obj) =>
+        JsonSerializer.Serialize(obj, JSON_OPTIONS);
 }
