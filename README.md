@@ -1,4 +1,6 @@
 # az-subscriptions-tui
+
+![](assets/demo.gif)
 A simple terminal user interface (TUI) to easily switch between subscriptions with the Azure CLI. Displays all subscriptions and lets you switch between which one will be used by default with azure cli commands.
 
 Saves you having to ```az account subscription list```, then copying the subscription name then doing ```az account set --subscription "subscriptionName"```

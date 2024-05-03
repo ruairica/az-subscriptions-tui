@@ -1,6 +1,5 @@
 ﻿namespace Az.Subscriptions;
 
-
 public record AzureAccount(string InstallationId, Subscription[] Subscriptions);
 
 public record Subscription(
