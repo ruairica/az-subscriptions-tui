@@ -41,17 +41,10 @@ public class SubscriptionsListView : ListView
         }
 
         AllowsAll();
-        File.WriteAllText(PATH, CreateWithActiveSubscription(_azureAccount, SelectedItem).Serialize());
+        _azureAccount.SetActiveSubscription(SelectedItem);
+        File.WriteAllText(PATH, _azureAccount.Serialize());
         Source.SetMark(SelectedItem, true);
         SetNeedsDisplay();
         return true;
     }
-
-    private static AzureAccount CreateWithActiveSubscription(AzureAccount azureAccount, int active) =>
-        new AzureAccount(azureAccount.InstallationId,
-            [..azureAccount
-                .Subscriptions
-                .Select((s, index) => s with { IsDefault = index == active })]
-                
-        );
 }
