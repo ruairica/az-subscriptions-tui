@@ -1,10 +1,9 @@
 ﻿using Terminal.Gui;
-using System.Text.Json;
 using System.Runtime.InteropServices;
 
 namespace Az.Subscriptions;
 
-public class SubscriptionsList : ListView
+public class SubscriptionsListView : ListView
 {
     public static string PATH => Path.Combine(
             Environment.GetFolderPath(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
@@ -13,19 +12,25 @@ public class SubscriptionsList : ListView
         ".azure",
         "azureProfile.json");
 
-    public static readonly JsonSerializerOptions JSON_OPTIONS = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-    private readonly AzureAccount azureAccount;
+    private readonly AzureAccount _azureAccount;
 
-    public SubscriptionsList(AzureAccount azureAccount)
+    public SubscriptionsListView(AzureAccount azureAccount)
         : base(azureAccount.Subscriptions.Select(s => s.Name).ToList())
     {
-        this.azureAccount = azureAccount;
+        _azureAccount = azureAccount;
         Height = Dim.Fill();
         Width = Dim.Fill();
         AllowsMarking = true;
         AllowsMultipleSelection = false;
-        SelectedItem = this.azureAccount.Subscriptions.ToList().FindIndex(x => x.IsDefault);
+        SelectedItem = _azureAccount.Subscriptions.FindIndex(x => x.IsDefault);
         MarkUnmarkRow();
+
+        KeyPress += args => {
+            if (args.KeyEvent.Key is Key.q)
+            {
+                Application.RequestStop();
+            }
+        };
     }
 
     public override bool MarkUnmarkRow()
@@ -36,20 +41,17 @@ public class SubscriptionsList : ListView
         }
 
         AllowsAll();
-        File.WriteAllText(PATH, Serialize(ToUpdatedAzureAccount(azureAccount, SelectedItem)));
+        File.WriteAllText(PATH, CreateWithActiveSubscription(_azureAccount, SelectedItem).Serialize());
         Source.SetMark(SelectedItem, true);
         SetNeedsDisplay();
         return true;
     }
 
-    private static AzureAccount ToUpdatedAzureAccount(AzureAccount azureAccount, int active) =>
-        new(azureAccount.InstallationId,
-            azureAccount
+    private static AzureAccount CreateWithActiveSubscription(AzureAccount azureAccount, int active) =>
+        new AzureAccount(azureAccount.InstallationId,
+            [..azureAccount
                 .Subscriptions
-                .Select((s, index) => s with { IsDefault = index == active })
-                .ToArray()
+                .Select((s, index) => s with { IsDefault = index == active })]
+                
         );
-
-    private static string Serialize(AzureAccount obj) =>
-        JsonSerializer.Serialize(obj, JSON_OPTIONS);
 }

@@ -1,6 +1,6 @@
 ﻿namespace Az.Subscriptions;
 
-public record AzureAccount(string InstallationId, Subscription[] Subscriptions);
+public record AzureAccount(string InstallationId, List<Subscription> Subscriptions);
 
 public record Subscription(
     string Id,
@@ -11,9 +11,9 @@ public record Subscription(
     string TenantId,
     string EnvironmentName,
     string HomeTenantId,
-    Managedbytenant[] ManagedByTenants
+    List<ManagedByTenant> ManagedByTenants
 );
 
 public record User(string Name, string Type);
 
-public record Managedbytenant(string TenantId);
+public record ManagedByTenant(string TenantId);
